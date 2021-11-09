@@ -1,5 +1,5 @@
 //const axios = require("axios");
-
+const RINGDELAY = 1000;
 const soundPath = {
     red: "sounds/red.wav",
     blue: "sounds/blue.wav",
@@ -18,22 +18,18 @@ class Button {
     playSound() {
         this.audio.play();
     }
+    //lightens color
     changeColor() {
         this.button.className =  `light${this.color}`
     }
+    //changes color back to basic
     revert() {
         this.button.className = this.color
     }
-
-    //functions to play sound
-    //functions to change color
-
-    //function to get the actual element
-
-//TODO make a button class
 }  
 class SimoneGame {
     constructor (){
+        this.startPattern = ["G","B","G","Y","G","B","B","G","G","R","B","G"];
         this.number = document.querySelector("#rounds").value;
         this.R = new Button("#redSq")
         this.B = new Button("#blueSq")
@@ -45,6 +41,15 @@ class SimoneGame {
         this.G.loadSound(soundPath.green)
         this.Y.loadSound(soundPath.yellow)
     }
+    async getPattern() {
+        try{
+            //TODO implement request
+            let endpoint = "http://cs.pugetsound.edu/~dchiu/cs240/api/simone/?cmd=start"
+            return this.startPattern;
+
+        } catch(err) {
+            return;}
+    }
 }
 
 let targetString = ["r", "b"]//change to get string 
@@ -55,7 +60,7 @@ let JSONstring = ''; //TODO write code to grab JSON string
 let game = new SimoneGame();
 
 
-
+//within game loop, await a promise for correct input
 
 
 //timeout code
@@ -72,53 +77,40 @@ for(let i = 1; i <= 1;i++){
 //function that takes am array of letters, how many to do, and then rings them
 async function output(string, numbertoPrint){
     for (let j = 0; j < numbertoPrint;j++){
-        let done = await ring(string[j]);
+        ring(string[j]);
+        await sleep(1000)
         
         //TODO add wait
     }
 
 }
-//function that takes a color, and lights it up and plays a sound
+//function that takes a color, and lights it up and plays a sound, then reverts after a delay
 async function ring(color){
     //TODO implement ring
     if (color == "r" && playing){
-        setTimeout( () => {
-            red.className = "lightred";
-            setTimeout( () => {
-                red.className = "red";
-            }
-            , 1000)
-        }
-        , 1000)
-
+       
+        game.R.changeColor();
+        game.R.playSound();
+        await sleep(RINGDELAY);
+        game.R.revert();
     }
     else if (color == "b" && playing){
-        setTimeout( () => {
-            blue.className = "lightblue";
-            setTimeout( () => {
-                blue.className = "blue";
-            }
-            , 1000)
-        }
-        , 1000)
+        game.B.changeColor();
+        game.B.playSound();
+        await sleep(RINGDELAY);
+        game.B.revert();
+
     }else if (color == "y" && playing){
-        setTimeout( () => {
-            yellow.className = "lightyellow";
-            setTimeout( () => {
-                yellow.className = "yellow";
-            }
-            , 1000)
-        }
-        , 1000)
+        game.Y.changeColor();
+        game.Y.playSound();
+        await sleep(RINGDELAY);
+        game.Y.revert();
+
     }else if (color == "g" && playing){
-        setTimeout( () => {
-            green.className = "lightgreen";
-            setTimeout( () => {
-                green.className = "green";
-            }
-            , 1000)
-        }
-        , 1000)
+        game.G.changeColor();
+        game.G.playSound();
+        await sleep(RINGDELAY);
+        game.G.revert();
     }
 }
 
