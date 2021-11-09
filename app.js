@@ -6,25 +6,64 @@ const soundPath = {
     green: "sounds/green.wav",
     yellow: "sounds/yellow.wav",
   };
+//Button class that takes an Element ID as its constructor then loads up
+class Button {
+    constructor (element){
+        this.button = document.querySelector(element);
+        this.color = this.button.className
+    }
+    loadSound(path) {
+        this.audio = new Audio(path);
+    }
+    playSound() {
+        this.audio.play();
+    }
+    changeColor() {
+        this.button.className =  `light${this.color}`
+    }
+    revert() {
+        this.button.className = this.color
+    }
+
+    //functions to play sound
+    //functions to change color
+
+    //function to get the actual element
+
+//TODO make a button class
+}  
 class SimoneGame {
-    red = document.querySelector("#redSq")
-    blue = document.querySelector("#blueSq")
-     green = document.querySelector("#greenSq")
-     yellow = document.querySelector("#yellowSq")
+    constructor (){
+        this.number = document.querySelector("#rounds").value;
+        this.R = new Button("#redSq")
+        this.B = new Button("#blueSq")
+        this.G = new Button("#greenSq")
+        this.Y = new Button("#yellowSq")
+
+        this.R.loadSound(soundPath.red)
+        this.B.loadSound(soundPath.blue)
+        this.G.loadSound(soundPath.green)
+        this.Y.loadSound(soundPath.yellow)
+    }
 }
 
 let targetString = ["r", "b"]//change to get string 
 let playing = true;
 let turnCount = 0;    
-let number = document.querySelector("#rounds").value; //number of rounds
+
 let JSONstring = ''; //TODO write code to grab JSON string
+let game = new SimoneGame();
+
+
+
+
 
 //timeout code
 //await new Promise(resolve => setTimeout(resolve, 1000));
 
 
 //Actual game loop
-for(let i = 1; i <= number;i++){
+for(let i = 1; i <= 1;i++){
     output(JSONstring, i);
     //Add wait
     //get user input and check it
@@ -90,25 +129,7 @@ async function getGreeting(){
         return;}
 }
 
-//Button class that takes an Element ID as its constructor then loads up
-class Button {
-    constructor (element){
-        this.button = document.querySelector(element);
-    }
-    loadSound(path) {
-        this.audio = new Audio(path);
-    }
-    playSound() {
-        this.audio.play();
-    }
 
-    //functions to play sound
-    //functions to change color
-
-    //function to get the actual element
-
-//TODO make a button class
-}
 //make sleep 
 async function sleep(delay) {
     return new Promise((resolve) => setTimeout(resolve, delay));
