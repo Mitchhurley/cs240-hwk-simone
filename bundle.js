@@ -1,0 +1,1 @@
+console.error("Error: Parsing file C:\\Users\\12064\\Documents\\0SoftEng\\cs240-hwk-simone\\app.js: Unexpected token (41:15)");
