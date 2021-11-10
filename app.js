@@ -1,22 +1,30 @@
 //const axios = require("axios");
-const RINGDELAY = 1000;
+const RINGDELAY = 120;
 const soundPath = {
     red: "sounds/red.wav",
     blue: "sounds/blue.wav",
     green: "sounds/green.wav",
     yellow: "sounds/yellow.wav",
   };
+//TODO figure out how to stagger audio
+
+
+
+
 //Button class that takes an Element ID as its constructor then loads up
 class Button {
+
+    //Contructs button based on element ID
     constructor (element){
         this.button = document.querySelector(element);
         this.color = this.button.className
     }
-    loadSound(path) {
-        this.audio = new Audio(path);
-    }
-    playSound() {
-        this.audio.play();
+    
+    //Sets audio p
+
+
+    playSound(path) {
+        new Audio(path).play();
     }
     //lightens color
     changeColor() {
@@ -29,17 +37,13 @@ class Button {
 }  
 class SimoneGame {
     constructor (){
-        this.startPattern = ["G","B","G","Y","G","B","B","G","G","R","B","G"];
+        this.startPattern = ["G","B","R","Y","G","B","Y","R","G","R","B","G"];
         this.number = document.querySelector("#rounds").value;
         this.R = new Button("#redSq")
         this.B = new Button("#blueSq")
         this.G = new Button("#greenSq")
         this.Y = new Button("#yellowSq")
 
-        this.R.loadSound(soundPath.red)
-        this.B.loadSound(soundPath.blue)
-        this.G.loadSound(soundPath.green)
-        this.Y.loadSound(soundPath.yellow)
     }
     async getPattern() {
         try{
@@ -50,15 +54,28 @@ class SimoneGame {
         } catch(err) {
             return;}
     }
+    async beeper(pattern, delay){
+        if(typeof(delay)==='undefined') delay = RINGDELAY;
+        for (const color of pattern) {
+            i++;
+            ring(color);
+            await sleep(delay);
+        }
+         
+     
+        
+    }
 }
-
+//grab play button and add event listener
+//even listener grabs val
 let targetString = ["r", "b"]//change to get string 
 let playing = true;
 let turnCount = 0;    
 
 let JSONstring = ''; //TODO write code to grab JSON string
-let game = new SimoneGame();
 
+let i = 0;
+document.addEventListener("click", () => game.beeper(game.startPattern));
 
 //within game loop, await a promise for correct input
 
@@ -87,28 +104,28 @@ async function output(string, numbertoPrint){
 //function that takes a color, and lights it up and plays a sound, then reverts after a delay
 async function ring(color){
     //TODO implement ring
-    if (color == "r" && playing){
+    if (color == "R"){
        
         game.R.changeColor();
-        game.R.playSound();
+        game.R.playSound(soundPath.red);
         await sleep(RINGDELAY);
         game.R.revert();
     }
-    else if (color == "b" && playing){
+    else if (color == "B"){
         game.B.changeColor();
-        game.B.playSound();
+        game.B.playSound(soundPath.blue);
         await sleep(RINGDELAY);
         game.B.revert();
 
-    }else if (color == "y" && playing){
+    }else if (color == "Y"){
         game.Y.changeColor();
-        game.Y.playSound();
+        game.Y.playSound(soundPath.yellow);
         await sleep(RINGDELAY);
         game.Y.revert();
 
-    }else if (color == "g" && playing){
+    }else if (color == "G"){
         game.G.changeColor();
-        game.G.playSound();
+        game.G.playSound(soundPath.green);
         await sleep(RINGDELAY);
         game.G.revert();
     }
@@ -120,12 +137,14 @@ async function getGreeting(){
     } catch(err) {
         return;}
 }
-
-
 //make sleep 
 async function sleep(delay) {
     return new Promise((resolve) => setTimeout(resolve, delay));
 }
+
+document.querySelector("#play").addEventListener("click", () => {
+    var game = new SimoneGame();
+})
 //make a function 
 //function play();
 //set event listener for "play game"
