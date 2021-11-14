@@ -1,1 +1,1 @@
-console.error("Error: Parsing file C:\\Users\\12064\\Documents\\0SoftEng\\cs240-hwk-simone\\app.js: Unexpected token (41:15)");
+console.error("Error: Can't walk dependency graph: Cannot find module 'C:\\Users\\12064\\Documents\\0SoftEng\\cs240-hwk-simone\\simone.js' from 'C:\\Users\\12064\\Documents\\0SoftEng\\cs240-hwk-simone\\_fake.js'\n    required by C:\\Users\\12064\\Documents\\0SoftEng\\cs240-hwk-simone\\_fake.js");

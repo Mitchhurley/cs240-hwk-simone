@@ -5,8 +5,14 @@ const soundPath = {
     blue: "sounds/blue.wav",
     green: "sounds/green.wav",
     yellow: "sounds/yellow.wav",
+    lose: "sounds/lose.wav",
   };
-//TODO figure out how to stagger audio
+//TODO List
+//Add button listeners for lighting up and playing noise when clicked
+//Make a fail case
+//Figure out axios requests
+//Make progress updates as game goes along
+//Add in timing in between segments
 
 
 
@@ -15,17 +21,16 @@ const soundPath = {
 class Button {
 
     //Contructs button based on element ID
-    constructor (element){
+    constructor (element, colorLetter, game, path){
         this.button = document.querySelector(element);
-        this.color = this.button.className
-        this.name = ""
+        this.color = this.button.className;
+        this.name = colorLetter;
+        this.game = game;
+        this.sound = new Audio(path);
         
     }
-    
-    //Sets audio p
-
     playSound(path) {
-        new Audio(path).play();
+        this.sound.play();
     }
     //lightens color
     changeColor() {
@@ -35,38 +40,46 @@ class Button {
     revert() {
         this.button.className = this.color
     }
-    //add method on hover
-    hover(bool){
-    
+    addButtonlisteners() {
+        this.button.addEventListener("click", () =>{
+            if (playing) {
+                this.game.ring(this.name);
+                this.game.check(this.name);
+
+            }
+        })
+        this.button.addEventListener("mouseover", () =>{
+            if (playing) {
+                this.button.classList.add("hover");
+            }})
+        this.button.addEventListener("mouseout", () => {
+            if (playing) {this.button.classList.remove("hover")}
+        })    
     }
 }  
 class SimoneGame {
     constructor (){
+        turnCount = 0;
         this.startPattern = ["G","B","R","Y","G","B","Y","R","G","R","B","G"];
         this.number = document.querySelector("#rounds").value;
         this.roundsPlayed = 0;  
-        this.R = new Button("#redSq")
-        this.R.name = "R"
-        this.B = new Button("#blueSq")
-        this.B.name = "B"
-        this.G = new Button("#greenSq")
-        this.G.name = "G"
-        this.Y = new Button("#yellowSq")
-        this.Y.name = "Y"
+        this.R = new Button("#redSq", "R", this, soundPath.red)
+        this.B = new Button("#blueSq", "B", this, soundPath.blue)
+        this.G = new Button("#greenSq", "G", this, soundPath.green)
+        this.Y = new Button("#yellowSq", "Y", this, soundPath.yellow)
+        this.header = document.querySelector("#status");
+        this.loser = new Audio(soundPath.lose)
 
-        addButtonlisteners();
-
-        this.newGame(this.number)
-        //keeps track of if user has selected pattern
-        this.hasNext = false;
-
-
+        this.newGame(this.number);
+   
     }
+    
     async getPattern() {
         try{
             //TODO implement request
             let endpoint = "http://cs.pugetsound.edu/~dchiu/cs240/api/simone/?cmd=start"
-            return this.startPattern;
+            let response = await axios.get(endpoint);
+            return response.sequence;
 
         } catch(err) {
             return;}
@@ -80,23 +93,24 @@ class SimoneGame {
     }
     async newGame(){
         //get basic string
-        let sol = ["Y","B","R","Y","B","B","R","R","G","R"];
-        for (let j = 0; j < this.number; j++){
-            await this.beeper(sol.slice(0, j), 500)
+        playing = true;
+        this.R.addButtonlisteners();
+        this.B.addButtonlisteners();
+        this.Y.addButtonlisteners();
+        this.G.addButtonlisteners();
+        //let response = await this.getPattern();
+        this.beeper(this.startPattern)
+        await sleep(5000);
+        this.sol = ["Y","B","R","Y","B","B","R","R","G","R"];
+        //for (let j = 0; j < this.number; j++){
+         //   await this.beeper(this.sol.slice(0, j), 500)
             //print out
-        }
-        humanTurn()
-        /*
-        check answer loop{
-            try to get ans
-            await check(curr)
-            when check resolves, move on and repeat
-            when check rejects go to fail case
-        }
-        */
+        //}
+        this.nextRound();
+        
     }
     async ring(color){
-        //TODO implement ring
+   
         if (color == "R"){
            
             this.R.changeColor();
@@ -123,15 +137,36 @@ class SimoneGame {
             this.G.revert();
         }
     }
-    check() {
-        
+    check(val) {
+       if (this.sol[turnCount]==val){
+           turnCount++
+           if (turnCount == this.roundsPlayed){
+               this.nextRound();
+           }else {
+               this.header.innerHTML = `Nice Job! ${this.roundsPlayed - turnCount} to go!`
+                       }
+       } else{
+           playing = false;
+           document.body.style.backgroundColor = "HotPink";
+           this.loser.play();
        // while (this.hasNext)
-    }
-    addButtonlisteners(target) {
-        target.button.addEventListener("click", () =>{
-            this.check(target.name);
+
+
+       //if all the current answers are right
+    }}
+    
+    //moves to the next round 
+    nextRound(){
+        turnCount = 0;
+        this.roundsPlayed++
+        this.header.innerHTML = ``;
+        if (this.roundsPlayed == this.number){
+            //win case
+            console.log("you win")
         }
-        )
+        this.beeper(this.sol.slice(0, this.roundsPlayed), 500)
+
+        
     }
 
 
@@ -139,8 +174,8 @@ class SimoneGame {
 //grab play button and add event listener
 //even listener grabs val
 let targetString = ["r", "b"]//change to get string 
-let playing = true;
-let turnCount = 0;    
+let playing = false;
+var turnCount = 0;    
 
 let JSONstring = ''; //TODO write code to grab JSON string
 
@@ -156,7 +191,7 @@ let i = 0;
 
 //function that takes a color, and lights it up and plays a sound, then reverts after a delay
 
-
+var game;
 async function getGreeting(){
     try{
         let endpoint = "http://cs.pugetsound.edu/~dchiu/cs240/api/simone/start"
@@ -170,7 +205,7 @@ async function sleep(delay) {
 let play = document.querySelector("#play")
 play.addEventListener("click", () => {
     if (playing == false){
-        var game = new SimoneGame();
+        game = new SimoneGame();
     }
     
     
