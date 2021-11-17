@@ -49,14 +49,16 @@ class Button {
                 
 
             }
-        })
+        })//adds border while hovered over
         this.button.addEventListener("mouseover", () =>{
             if (playing) {
                 this.button.classList.add("hover");
             }})
+        //removes the border once hover is gone    
         this.button.addEventListener("mouseout", () => {
             if (playing) {this.button.classList.remove("hover")}
         })
+        //when the mouse is released it does the check and noise but no flash
         this.button.addEventListener("mouseup", () =>{
             this.revert();
             this.game.check(this.name);
@@ -64,18 +66,25 @@ class Button {
         )    
          
     }
-}  
+} 
+//Class for a specific instance of the game 
 class SimoneGame {
     constructor (){
+        
         this.turnCount = 0;
-        this.startPattern = ["G","B","R","Y","G","B","Y","R","G","R","B","G"];
+
         this.number = document.querySelector("#rounds").value;
+        
         this.roundsPlayed = 0;  
+        
+        //inits all the buttons
         this.R = new Button("#redSq", "R", this, soundPath.red)
         this.B = new Button("#blueSq", "B", this, soundPath.blue)
         this.G = new Button("#greenSq", "G", this, soundPath.green)
         this.Y = new Button("#yellowSq", "Y", this, soundPath.yellow)
         this.header = document.querySelector("#status");
+
+        //necessary sounds for the game
         this.loser = new Audio(soundPath.lose)
         this.winner = new Audio(soundPath.win)
         this.next = new Audio(soundPath.next)
@@ -83,17 +92,9 @@ class SimoneGame {
         this.newGame(this.number);
    
     }
-    
-    async getPattern() {
-        try{
-            //TODO implement request
-            let endpoint = "http://cs.pugetsound.edu/~dchiu/cs240/api/simone/?cmd=start"
-            let response = await axios.get(endpoint);
-            return response.sequence;
 
-        } catch(err) {
-            return;}
-    }
+    
+    //function that rings the various buttons
     async beeper(pattern, delay){
         if(typeof(delay)==='undefined') delay = RINGDELAY;
         for (const color of pattern) {
@@ -101,6 +102,7 @@ class SimoneGame {
             await sleep(delay);
         }
     }
+    //method that is called when a new game is began
     async newGame(){
         //get basic string
         playing = true;
@@ -115,15 +117,17 @@ class SimoneGame {
 
         //requisite 4 sec delay
         await sleep(4000);
+
+        //getting main solution
         this.sol = await getSeq(this.number);
         this.sol = this.sol.data.key
-        //for (let j = 0; j < this.number; j++){
-         //   await this.beeper(this.sol.slice(0, j), 500)
-            //print out
-        //}
+
+        //starts game loop
         this.nextRound();
         
     }
+
+    //"rings" button by changing color and playing sound
     async ring(color){
    
         if (color == "R"){
@@ -152,6 +156,7 @@ class SimoneGame {
             this.G.revert();
         }
     }
+    //checks if the clicked button is the right one according to the solution
     check(val) {
        if (this.sol[this.turnCount]==val){
            this.turnCount++
@@ -172,12 +177,15 @@ class SimoneGame {
     async nextRound(){
         this.turnCount = 0;
         this.header.innerHTML = ``;
+
+        //checks the rounds completed against total to see if done
         if (this.roundsPlayed++ == this.number){
-            //document.body.style.backgroundColor = "DeepSkyBlue"
+            document.body.style.backgroundColor = "DeepSkyBlue"
             this.winner.play();
             this.header.innerHTML = "Yay you win!"
         }
         else if (playing){
+            //if it isnt the first round, print out messages
             if (this.roundsPlayed !=1){this.next.play()
             this.header.innerHTML = `Nice Job! Prepare for the next Round!`
             await sleep(800)
